@@ -51,6 +51,18 @@ class SyncTargetNextcloud extends BaseSyncTarget {
 
 		fileApi.setLogger(this.logger());
 
+		// Check if server has editWarningFile
+		const editWarningFile = { 'name': '_⚠️_IMPORTANT_READ_FIRST_⚠️_.md', 'content': 'WARNING DO NOT EDIT ANY MARKDOWN FILE' };
+		const response = await fileApi.get(editWarningFile.name);
+		if (!response) {
+			this.logger().info('Nextcloud: Missing edit warning file... adding it');
+			await fileApi.put(editWarningFile.name, editWarningFile.content);
+		} else if (response !== editWarningFile.content) {
+			this.logger().info('Nextcloud: Edit warning file has wrong content... updating it');
+			await fileApi.put(editWarningFile.name, editWarningFile.content);
+		} else {
+			this.logger().info('Nextcloud: Edit warning file is present and has the correct content');
+		}
 		return fileApi;
 	}
 
